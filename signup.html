@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>アカウント登録</title>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; padding: 40px; text-align: center; }
+    .box { max-width: 360px; margin: auto; display: flex; flex-direction: column; gap: 12px; }
+    input, button { padding: 10px; font-size: 15px; border: none; border-radius: 6px; width: 100%; }
+    button { background: #fff; color: #000; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>アカウントを作成</h2>
+  <div class="box">
+    <input type="email" id="email" placeholder="メールアドレス" />
+    <input type="password" id="password" placeholder="パスワード" />
+    <button id="signup">登録する</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = { /* ← 祐斗さんの設定をここに */ };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("signup").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        location.href = "setup.html";
+      } catch (e) {
+        alert("登録エラー：" + e.message);
+      }
+    });
+  </script>
+</body>
+</html>
