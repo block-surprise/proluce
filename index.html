@@ -3,40 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Proluce — 光の通り道</title>
+  <title>Proluce</title>
   <style>
+    :root {
+      --bg: #f9f9f8;
+      --fg: #1a1a1a;
+      --muted: #888;
+      --accent: #111;
+      --line: #e5e5e3;
+      --card: #fff;
+    }
     body {
       margin: 0;
       font-family: "Helvetica Neue", sans-serif;
-      background: #f9f9f8;
-      color: #1a1a1a;
+      background: var(--bg);
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
       text-align: center;
       padding: 20px 16px 12px;
-      border-bottom: 1px solid #e5e5e3;
+      border-bottom: 1px solid var(--line);
     }
     h1 {
-      font-size: 22px;
+      font-size: 20px;
       margin: 0;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
     }
-    .subtitle {
-      font-size: 13px;
-      color: #888;
-      margin-top: 4px;
-    }
-
     main {
+      flex: 1;
       padding: 16px;
+      margin-bottom: 60px;
     }
-
     .grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 16px;
     }
-
     .video-card {
       position: relative;
       border-radius: 12px;
@@ -44,18 +49,16 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       cursor: pointer;
     }
-
     .video-card video {
       width: 100%;
       height: auto;
       display: block;
       object-fit: cover;
     }
-
     .caption {
       padding: 8px 12px;
       font-size: 13px;
-      color: #555;
+      color: var(--muted);
       background: #fff;
     }
 
@@ -63,34 +66,37 @@
     .viewer {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: #000;
       display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 100;
     }
-
     .viewer.show {
       display: flex;
     }
-
     .viewer video {
       max-height: 80vh;
       max-width: 100vw;
       border-radius: 12px;
       background: #000;
     }
-
-    .viewer .info {
-      color: #eee;
+    .controls {
+      display: flex;
+      gap: 12px;
       margin-top: 12px;
-      text-align: center;
-      font-size: 14px;
-      padding: 0 16px;
     }
-
-    .viewer .close-btn {
+    .controls button {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .close-btn {
       position: absolute;
       top: 16px;
       right: 16px;
@@ -103,9 +109,50 @@
       cursor: pointer;
     }
 
+    /* nav bar */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--card);
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    nav button {
+      background: none;
+      border: none;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    nav button.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
     @media(min-width: 768px){
-      .grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      body {
+        flex-direction: row;
+      }
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 160px;
+        height: 100vh;
+        flex-direction: column;
+        border-top: none;
+        border-right: 1px solid var(--line);
+        padding-top: 80px;
+      }
+      main {
+        margin-left: 160px;
+        margin-bottom: 0;
       }
     }
   </style>
@@ -113,36 +160,47 @@
 <body>
   <header>
     <h1>Proluce</h1>
-    <p class="subtitle">光の通り道 — 静かなギャラリー</p>
   </header>
 
   <main>
-    <div class="grid" id="gallery">
-      <!-- 動画カードがここに表示される -->
-    </div>
+    <div class="grid" id="gallery"></div>
   </main>
+
+  <nav>
+    <button class="active">ホーム</button>
+    <button>検索</button>
+    <button>投稿</button>
+    <button>通知</button>
+    <button>プロフィール</button>
+  </nav>
 
   <div class="viewer" id="viewer">
     <button class="close-btn" id="closeViewer">閉じる</button>
-    <video id="viewerVideo" controls autoplay muted playsinline></video>
-    <div class="info" id="viewerCaption"></div>
+    <video id="viewerVideo" autoplay muted playsinline></video>
+    <div class="controls">
+      <button id="playPause">⏸︎</button>
+      <button id="toggleMute">🔇</button>
+      <button id="fullscreen">⛶</button>
+    </div>
   </div>
 
   <script>
     const gallery = document.getElementById('gallery');
     const viewer = document.getElementById('viewer');
     const viewerVideo = document.getElementById('viewerVideo');
-    const viewerCaption = document.getElementById('viewerCaption');
     const closeBtn = document.getElementById('closeViewer');
+    const playPauseBtn = document.getElementById('playPause');
+    const toggleMuteBtn = document.getElementById('toggleMute');
+    const fullscreenBtn = document.getElementById('fullscreen');
 
     const posts = [
       {
         src: "https://www.w3schools.com/html/mov_bbb.mp4",
-        caption: "光が揺れていた、あの午後。"
+        caption: "午後の風景"
       },
       {
         src: "https://www.w3schools.com/html/movie.mp4",
-        caption: "静けさの中に、誰かの声が。"
+        caption: "誰かの気配"
       }
     ];
 
@@ -167,8 +225,10 @@
 
       card.addEventListener('click', () => {
         viewerVideo.src = post.src;
-        viewerCaption.textContent = post.caption;
         viewer.classList.add('show');
+        viewerVideo.play();
+        playPauseBtn.textContent = '⏸︎';
+        toggleMuteBtn.textContent = viewerVideo.muted ? '🔇' : '🔊';
       });
     });
 
@@ -176,6 +236,27 @@
       viewer.classList.remove('show');
       viewerVideo.pause();
       viewerVideo.src = '';
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (viewerVideo.paused) {
+        viewerVideo.play();
+        playPauseBtn.textContent = '⏸︎';
+      } else {
+        viewerVideo.pause();
+        playPauseBtn.textContent = '▶︎';
+      }
+    });
+
+    toggleMuteBtn.addEventListener('click', () => {
+      viewerVideo.muted = !viewerVideo.muted;
+      toggleMuteBtn.textContent = viewerVideo.muted ? '🔇' : '🔊';
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (viewerVideo.requestFullscreen) {
+        viewerVideo.requestFullscreen();
+      }
     });
   </script>
 </body>
