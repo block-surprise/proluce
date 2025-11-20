@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>プロフィール設定</title>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; padding: 40px; text-align: center; }
+    .box { max-width: 360px; margin: auto; display: flex; flex-direction: column; gap: 12px; }
+    input, button { padding: 10px; font-size: 15px; border: none; border-radius: 6px; width: 100%; }
+    button { background: #fff; color: #000; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>プロフィールを設定</h2>
+  <div class="box">
+    <input type="text" id="username" placeholder="ユーザーネーム（英数字）" />
+    <input type="text" id="displayName" placeholder="表示名（自由）" />
+    <button id="save">保存する</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs,
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = { /* ← 同じく設定をここに */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    document.getElementById("save").addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      const displayName = document.getElementById("displayName").value.trim();
+      const user = auth.currentUser;
+
+      if (!username || !displayName) {
+        alert("両方入力してね！");
+        return;
+      }
+
+      const q = query(collection(db, "users"), where("username", "==", username));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        alert("そのユーザーネームは使われています！");
+        return;
+      }
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        username: username,
+        displayName: displayName,
+        email: user.email,
+        createdAt: new Date()
+      });
+
+      alert("プロフィールを登録しました！");
+      location.href = "profile.html"; // 次のページへ
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (!user) location.href = "signup.html";
+    });
+  </script>
+</body>
+</html>
