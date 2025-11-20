@@ -73,7 +73,7 @@
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        location.href = "setup.html";
+        location.href = "setup";
       } catch (e) {
         alert("登録エラー：" + e.message);
       }
