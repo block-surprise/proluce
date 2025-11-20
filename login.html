@@ -89,7 +89,7 @@
     <button id="login">ログイン</button>
     <p id="message"></p>
     <div class="link">
-      <a href="signup.html">まだ登録していない方はこちら</a>
+      <a href="signup">まだ登録していない方はこちら</a>
     </div>
   </div>
 
@@ -123,7 +123,7 @@ try {
   message.style.color = "#4caf50";
   message.textContent = `${name}さん、お帰りなさい。`;
         setTimeout(() => {
-          location.href = "home.html";
+          location.href = "profile";
         }, 1500);
       } catch (e) {
         message.style.color = "#f88";
