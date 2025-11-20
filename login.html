@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ログイン</title>
+</head>
+<body>
+  <h1>ログイン</h1>
+  <input type="email" id="email" placeholder="メールアドレス" />
+  <input type="password" id="password" placeholder="パスワード" />
+  <button id="login">ログイン</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCP1k__UfUutHk1IynMXc05VUyoLd_1pH8",
+      authDomain: "proluce-app.firebaseapp.com",
+      projectId: "proluce-app",
+      storageBucket: "proluce-app.appspot.com",
+      messagingSenderId: "1000904334048",
+      appId: "1:1000904334048:web:65626cc73c523177f24e85"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("login").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        location.href = "home.html"; // ← ログイン後に遷移するページ
+      } catch (e) {
+        alert("ログインエラー：" + e.message);
+      }
+    });
+  </script>
+</body>
+</html>
