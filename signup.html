@@ -38,10 +38,17 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      if (password.length < 6) {
-  alert("パスワードは6文字以上にしてください");
-  return;
-}
+ // 🔍 メール形式チェック
+  if (!isValidEmail(email)) {
+    alert("メールアドレスの形式が正しくありません");
+    return;
+  }
+
+  // 🔒 パスワード長さチェック
+  if (password.length < 6) {
+    alert("パスワードは6文字以上にしてください");
+    return;
+  }
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
