@@ -3,17 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <title>ログイン</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background: #fff;
+      padding: 2.5em 3em;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 360px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 1.4em;
+      margin-bottom: 1.2em;
+      color: #333;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8em;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #43a047;
+    }
+
+    #message {
+      text-align: center;
+      font-size: 0.9em;
+      color: #f88;
+      margin-top: 1em;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 1.5em;
+      font-size: 0.85em;
+      color: #666;
+    }
+
+    .link a {
+      color: #4caf50;
+      text-decoration: none;
+    }
+
+    .link a:hover {
+      color: #81c784;
+    }
+  </style>
 </head>
 <body>
-  <h1>ログイン</h1>
-  <input type="email" id="email" placeholder="メールアドレス" />
-  <input type="password" id="password" placeholder="パスワード" />
-  <button id="login">ログイン</button>
-<p style="text-align:center; font-size:0.9em; color:#666;">
-  <a href="signup.html" style="text-decoration:none; color:#4caf50;">
-    はじめての方はこちらから
-  </a>
-</p>
+  <div class="login-container">
+    <h1></h1>ログイン</h1>
+    <input type="email" id="email" placeholder="メールアドレス" />
+    <input type="password" id="password" placeholder="パスワード" />
+    <button id="login">ログイン</button>
+    <p id="message"></p>
+    <div class="link">
+      <a href="signup.html">まだ登録していない方はこちら</a>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
@@ -31,16 +109,22 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    const message = document.getElementById("message");
+
     document.getElementById("login").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        location.href = "home.html"; // ← ログイン後に遷移するページ
+        message.style.color = "#4caf50";
+        message.textContent = "ようこそ、波の先へ…";
+        setTimeout(() => {
+          location.href = "home.html";
+        }, 1500);
       } catch (e) {
-        alert("ログインエラー：" + e.message);
+        message.style.color = "#f88";
+        message.textContent = "ログインエラー：" + e.message;
       }
     });
   </script>
