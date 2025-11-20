@@ -5,27 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Proluce — 光の通り道</title>
   <style>
-    :root {
-      --bg: #f9f9f8;
-      --fg: #1a1a1a;
-      --muted: #888;
-      --accent: #111;
-      --line: #e5e5e3;
-      --card: #fff;
-    }
     body {
       margin: 0;
       font-family: "Helvetica Neue", sans-serif;
-      background: var(--bg);
-      color: var(--fg);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      background: #f9f9f8;
+      color: #1a1a1a;
     }
     header {
       text-align: center;
-      padding: 24px 16px 12px;
-      border-bottom: 1px solid var(--line);
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid #e5e5e3;
     }
     h1 {
       font-size: 22px;
@@ -34,86 +23,89 @@
     }
     .subtitle {
       font-size: 13px;
-      color: var(--muted);
+      color: #888;
       margin-top: 4px;
     }
 
     main {
-      flex: 1;
       padding: 16px;
-      margin-bottom: 60px; /* for mobile nav */
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr;
+      gap: 16px;
     }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
+
+    .video-card {
+      position: relative;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      cursor: pointer;
     }
-    .card img, .card video {
+
+    .video-card video {
       width: 100%;
       height: auto;
       display: block;
       object-fit: cover;
     }
+
     .caption {
-      padding: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      white-space: pre-wrap;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #555;
+      background: #fff;
     }
 
-    /* nav bar */
-    nav {
+    /* viewer */
+    .viewer {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 56px;
-      background: var(--card);
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-around;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
       align-items: center;
+      z-index: 100;
     }
-    nav button {
-      background: none;
+
+    .viewer.show {
+      display: flex;
+    }
+
+    .viewer video {
+      max-height: 80vh;
+      max-width: 100vw;
+      border-radius: 12px;
+      background: #000;
+    }
+
+    .viewer .info {
+      color: #eee;
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      padding: 0 16px;
+    }
+
+    .viewer .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
       border: none;
-      font-size: 13px;
-      color: var(--muted);
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
       cursor: pointer;
     }
-    nav button.active {
-      color: var(--accent);
-      font-weight: bold;
-    }
 
-    /* desktop nav */
     @media(min-width: 768px){
-      body {
-        flex-direction: row;
-      }
-      nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 160px;
-        height: 100vh;
-        flex-direction: column;
-        border-top: none;
-        border-right: 1px solid var(--line);
-        padding-top: 80px;
-      }
-      main {
-        margin-left: 160px;
-        margin-bottom: 0;
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       }
     }
   </style>
@@ -124,42 +116,66 @@
     <p class="subtitle">光の通り道 — 静かなギャラリー</p>
   </header>
 
-  <main id="home">
+  <main>
     <div class="grid" id="gallery">
-      <!-- 投稿カードがここに表示される -->
+      <!-- 動画カードがここに表示される -->
     </div>
   </main>
 
-  <nav>
-    <button class="active">ホーム</button>
-    <button>投稿</button>
-    <button>プロフィール</button>
-  </nav>
+  <div class="viewer" id="viewer">
+    <button class="close-btn" id="closeViewer">閉じる</button>
+    <video id="viewerVideo" controls autoplay muted playsinline></video>
+    <div class="info" id="viewerCaption"></div>
+  </div>
 
   <script>
-    // 仮の投稿データ
     const gallery = document.getElementById('gallery');
-    const samplePosts = [
-      { type: 'image', src: 'https://placekitten.com/300/300', caption: 'やさしい午後の光' },
-      { type: 'video', src: 'https://www.w3schools.com/html/mov_bbb.mp4', caption: '静かな時間の流れ' },
-      { type: 'image', src: 'https://placekitten.com/320/320', caption: '誰かの声が届く場所' }
+    const viewer = document.getElementById('viewer');
+    const viewerVideo = document.getElementById('viewerVideo');
+    const viewerCaption = document.getElementById('viewerCaption');
+    const closeBtn = document.getElementById('closeViewer');
+
+    const posts = [
+      {
+        src: "https://www.w3schools.com/html/mov_bbb.mp4",
+        caption: "光が揺れていた、あの午後。"
+      },
+      {
+        src: "https://www.w3schools.com/html/movie.mp4",
+        caption: "静けさの中に、誰かの声が。"
+      }
     ];
 
-    samplePosts.forEach(post => {
+    posts.forEach(post => {
       const card = document.createElement('div');
-      card.className = 'card';
+      card.className = 'video-card';
 
-      const media = document.createElement(post.type === 'video' ? 'video' : 'img');
-      media.src = post.src;
-      if (post.type === 'video') media.controls = true;
-      card.appendChild(media);
+      const video = document.createElement('video');
+      video.src = post.src;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.autoplay = true;
 
       const cap = document.createElement('div');
       cap.className = 'caption';
       cap.textContent = post.caption;
-      card.appendChild(cap);
 
+      card.appendChild(video);
+      card.appendChild(cap);
       gallery.appendChild(card);
+
+      card.addEventListener('click', () => {
+        viewerVideo.src = post.src;
+        viewerCaption.textContent = post.caption;
+        viewer.classList.add('show');
+      });
+    });
+
+    closeBtn.addEventListener('click', () => {
+      viewer.classList.remove('show');
+      viewerVideo.pause();
+      viewerVideo.src = '';
     });
   </script>
 </body>
