@@ -115,10 +115,13 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        message.style.color = "#4caf50";
-        message.textContent = "ようこそ、波の先へ…";
+try {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+  const name = user.displayName || "あなた"; // ← 名前が未設定なら「あなた」
+
+  message.style.color = "#4caf50";
+  message.textContent = `${name}さん、お帰りなさい。`;
         setTimeout(() => {
           location.href = "home.html";
         }, 1500);
