@@ -50,6 +50,34 @@
       border-radius: 12px;
     }
 
+    .actions {
+      position: absolute;
+      right: 16px;
+      bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .heart-btn {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .heart-btn.liked {
+      color: #ff5c8a;
+    }
+
+    .like-count {
+      font-size: 12px;
+      color: #aaa;
+    }
+
     nav {
       position: fixed;
       bottom: 0;
@@ -114,15 +142,23 @@
     const posts = [
       {
         src: "https://www.w3schools.com/html/mov_bbb.mp4",
-        caption: "午後の風景"
+        caption: "午後の風景",
+        user: "@yuto_design",
+        hashtags: ["#風景", "#午後", "#静けさ"],
+        likes: 12,
+        liked: false
       },
       {
         src: "https://www.w3schools.com/html/movie.mp4",
-        caption: "誰かの気配"
+        caption: "誰かの気配",
+        user: "@mizu_voice",
+        hashtags: ["#気配", "#夜", "#記憶"],
+        likes: 8,
+        liked: false
       }
     ];
 
-    posts.forEach(post => {
+    posts.forEach((post, index) => {
       const section = document.createElement('section');
       section.className = 'post';
 
@@ -134,22 +170,48 @@
       video.playsInline = true;
 
       video.addEventListener('click', () => {
-        if (video.paused) {
-          video.play();
-        } else {
-          video.pause();
-        }
+        video.paused ? video.play() : video.pause();
       });
 
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
-      overlay.textContent = post.caption;
+      overlay.innerHTML = `
+        <strong>${post.user}</strong><br>
+        ${post.caption}<br>
+        <span style="color:#aaa">${post.hashtags.join(' ')}</span>
+      `;
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const heartBtn = document.createElement('button');
+      heartBtn.className = 'heart-btn';
+      heartBtn.innerHTML = '❤️';
+
+      const likeCount = document.createElement('div');
+      likeCount.className = 'like-count';
+      likeCount.textContent = post.likes;
+
+      if (post.liked) heartBtn.classList.add('liked');
+
+      heartBtn.addEventListener('click', () => {
+        post.liked = !post.liked;
+        heartBtn.classList.toggle('liked');
+        post.likes += post.liked ? 1 : -1;
+        likeCount.textContent = post.likes;
+        // ここでクラウド保存処理を追加できる（Firebaseなど）
+      });
+
+      actions.appendChild(heartBtn);
+      actions.appendChild(likeCount);
 
       section.appendChild(video);
       section.appendChild(overlay);
+      section.appendChild(actions);
       container.appendChild(section);
     });
   </script>
 </body>
 </html>
+
 
