@@ -22,7 +22,9 @@
     すでにアカウントをお持ちの方
   </a>
 </p>
-
+<!-- 🔽 ここにメッセージを置く -->
+<p id="message" style="margin-top: 1em; font-size: 0.9em; color: #f88; text-align: center;"></p>
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
@@ -67,6 +69,19 @@
         alert("登録エラー：" + e.message);
       }
     });
+  </script>
+  <script>
+    const message = document.getElementById("message");
+
+catch (e) {
+  if (e.code === "auth/email-already-in-use") {
+    message.textContent = "このメールアドレスはすでに登録されています。ログインページへどうぞ。";
+    return;
+  } else {
+    message.textContent = "登録エラー：" + e.message;
+  }
+}
+
   </script>
 </body>
 </html>
