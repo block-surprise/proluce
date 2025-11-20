@@ -39,38 +39,43 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    document.getElementById("save").addEventListener("click", async () => {
-      const username = document.getElementById("username").value.trim();
-      const displayName = document.getElementById("displayName").value.trim();
-      const user = auth.currentUser;
+ const message = document.getElementById("message");
 
-      if (!username || !displayName) {
-        alert("両方入力してね！");
-        return;
-      }
+document.getElementById("save").addEventListener("click", async () => {
+  const username = document.getElementById("username").value.trim();
+  const displayName = document.getElementById("displayName").value.trim();
+  const user = auth.currentUser;
 
-      const q = query(collection(db, "users"), where("username", "==", username));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        alert("そのユーザーネームは使われています！");
-        return;
-      }
+  if (!username || !displayName) {
+    message.style.color = "#f88";
+    message.textContent = "両方入力してください。";
+    return;
+  }
 
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        username: username,
-        displayName: displayName,
-        email: user.email,
-        createdAt: new Date()
-      });
+  const q = query(collection(db, "users"), where("username", "==", username));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    message.style.color = "#f88";
+    message.textContent = "そのユーザーネームはすでに使われています。";
+    return;
+  }
 
-      alert("プロフィールを登録しました！");
-      location.href = "profile.html"; // 次のページへ
-    });
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    username: username,
+    displayName: displayName,
+    email: user.email,
+    createdAt: new Date()
+  });
 
-    onAuthStateChanged(auth, user => {
-      if (!user) location.href = "signup.html";
-    });
+  message.style.color = "#4caf50";
+  message.textContent = `${displayName}さん、プロフィールを登録しました。`;
+
+  setTimeout(() => {
+    location.href = "profile.html";
+  }, 1500);
+});
+
   </script>
 </body>
 </html>
