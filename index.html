@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proluce — 光の通り道</title>
+  <style>
+    :root {
+      --bg: #f9f9f8;
+      --fg: #1a1a1a;
+      --muted: #888;
+      --accent: #111;
+      --line: #e5e5e3;
+      --card: #fff;
+    }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    header {
+      text-align: center;
+      padding: 32px 16px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0;
+      letter-spacing: 0.03em;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    #auth-section {
+      margin-top: 20px;
+    }
+    input, textarea, button {
+      font-size: 14px;
+      padding: 8px;
+      margin: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      width: 220px;
+      max-width: 90%;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #333;
+    }
+    #upload-section {
+      text-align: center;
+      padding: 24px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    #gallery {
+      padding: 24px 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card img, .card video {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+    .caption {
+      padding: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Proluce</h1>
+    <p class="subtitle">光の通り道 — 静かなギャラリー</p>
+    <div id="auth-section">
+      <form id="login-form">
+        <input type="email" id="email" placeholder="メールアドレス" required />
+        <input type="password" id="password" placeholder="パスワード" required />
+        <br />
+        <button type="submit">ログイン</button>
+        <button type="button" id="signup">新規登録</button>
+      </form>
+      <button id="logout" style="display:none;">ログアウト</button>
+    </div>
+  </header>
+
+  <section id="upload-section" style="display:none;">
+    <h2>投稿する</h2>
+    <input type="file" id="fileInput" accept="image/*,video/*" />
+    <br />
+    <textarea id="caption" placeholder="キャプション（詩や言葉）"></textarea>
+    <br />
+    <button id="uploadBtn">アップロード</button>
+  </section>
+
+  <section id="gallery">
+    <h2>ギャラリー</h2>
+    <div id="posts" class="grid"></div>
+  </section>
+
+  <footer>
+    © Proluce — 静けさの中に、光を。
+  </footer>
+
+  <script>
+    // 仮の動作（Firebase未接続）
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout');
+    const uploadSection = document.getElementById('upload-section');
+    const fileInput = document.getElementById('fileInput');
+    const captionInput = document.getElementById('caption');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const posts = document.getElementById('posts');
+    const signupBtn = document.getElementById('signup');
+
+    let loggedIn = false;
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      loggedIn = true;
+      loginForm.style.display = 'none';
+      logoutBtn.style.display = 'inline-block';
+      uploadSection.style.display = 'block';
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      loggedIn = false;
+      loginForm.style.display = 'block';
+      logoutBtn.style.display = 'none';
+      uploadSection.style.display = 'none';
+    });
+
+    signupBtn.addEventListener('click', () => {
+      alert('新規登録はまだ実装されていません');
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      const caption = captionInput.value;
+      if (!file) return alert('ファイルを選んでください');
+
+      const url = URL.createObjectURL(file);
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const media = file.type.startsWith('video/') ? document.createElement('video') : document.createElement('img');
+      media.src = url;
+      if (media.tagName === 'VIDEO') {
+        media.controls = true;
+      }
+      card.appendChild(media);
+
+      const cap = document.createElement('div');
+      cap.className = 'caption';
+      cap.textContent = caption;
+      card.appendChild(cap);
+
+      posts.prepend(card);
+      fileInput.value = '';
+      captionInput.value = '';
+    });
+  </script>
+</body>
+</html>
