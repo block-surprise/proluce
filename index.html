@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Proluce</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Helvetica Neue", sans-serif;
@@ -54,6 +55,34 @@
     }
     .username:hover {
       text-decoration: underline;
+    }
+
+    .actions {
+      position: absolute;
+      right: 16px;
+      bottom: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .action-btn.liked {
+      color: #ff5c8a;
+    }
+
+    .action-count {
+      font-size: 12px;
+      color: #aaa;
     }
 
     nav {
@@ -110,9 +139,7 @@
     <button>プロフィール</button>
   </nav>
 
-  <div class="container" id="container">
-    <!-- 投稿がここに表示される -->
-  </div>
+  <div class="container" id="container"></div>
 
   <script>
     const container = document.getElementById('container');
@@ -122,13 +149,19 @@
         src: "https://www.w3schools.com/html/mov_bbb.mp4",
         caption: "午後の風景",
         user: "yuto_design",
-        hashtags: ["#風景", "#午後", "#静けさ"]
+        hashtags: ["#風景", "#午後", "#静けさ"],
+        likes: 12,
+        comments: 3,
+        liked: false
       },
       {
         src: "https://www.w3schools.com/html/movie.mp4",
         caption: "誰かの気配",
         user: "mizu_voice",
-        hashtags: ["#気配", "#夜", "#記憶"]
+        hashtags: ["#気配", "#夜", "#記憶"],
+        likes: 8,
+        comments: 1,
+        liked: false
       }
     ];
 
@@ -155,12 +188,49 @@
         <span style="color:#aaa">${post.hashtags.join(' ')}</span>
       `;
 
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      // ❤️ ハート
+      const heartBtn = document.createElement('button');
+      heartBtn.className = 'action-btn';
+      heartBtn.innerHTML = post.liked ? '❤️' : '🤍';
+
+      const likeCount = document.createElement('div');
+      likeCount.className = 'action-count';
+      likeCount.textContent = post.likes;
+
+      heartBtn.addEventListener('click', () => {
+        post.liked = !post.liked;
+        post.likes += post.liked ? 1 : -1;
+        heartBtn.innerHTML = post.liked ? '❤️' : '🤍';
+        heartBtn.classList.toggle('liked', post.liked);
+        likeCount.textContent = post.likes;
+      });
+
+      // 💬 コメント
+      const commentBtn = document.createElement('button');
+      commentBtn.className = 'action-btn';
+      commentBtn.innerHTML = '💬';
+
+      const commentCount = document.createElement('div');
+      commentCount.className = 'action-count';
+      commentCount.textContent = post.comments;
+
+      commentBtn.addEventListener('click', () => {
+        alert("コメントUIは次で追加するよ！");
+      });
+
+      actions.appendChild(heartBtn);
+      actions.appendChild(likeCount);
+      actions.appendChild(commentBtn);
+      actions.appendChild(commentCount);
+
       section.appendChild(video);
       section.appendChild(overlay);
+      section.appendChild(actions);
       container.appendChild(section);
     });
   </script>
 </body>
 </html>
-
-
