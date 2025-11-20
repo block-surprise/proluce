@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>安心の設定</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1.4em;
+      margin-bottom: 24px;
+    }
+    .box {
+      max-width: 360px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      width: 100%;
+    }
+    button {
+      background: #fff;
+      color: #000;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 12px;
+      font-size: 0.9em;
+      color: #4caf50;
+    }
+    .link {
+      margin-top: 24px;
+      font-size: 0.85em;
+    }
+    .link a {
+      color: #4caf50;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>安心の設定</h2>
+  <div class="box">
+    <input type="password" id="newPassword" placeholder="新しいパスワード" />
+    <button id="changePassword">パスワードを変更する</button>
+    <button id="logout">ログアウトする</button>
+    <p id="message"></p>
+  </div>
+  <div class="link">
+    <a href="account-center.html">波の元へ戻る</a>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      updatePassword,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCP1k__UfUutHk1IynMXc05VUyoLd_1pH8",
+      authDomain: "proluce-app.firebaseapp.com",
+      projectId: "proluce-app",
+      storageBucket: "proluce-app.appspot.com",
+      messagingSenderId: "1000904334048",
+      appId: "1:1000904334048:web:65626cc73c523177f24e85"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const message = document.getElementById("message");
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        location.href = "login.html";
+      } else {
+        currentUser = user;
+      }
+    });
+
+    document.getElementById("changePassword").addEventListener("click", async () => {
+      const newPassword = document.getElementById("newPassword").value.trim();
+      if (!newPassword) {
+        message.style.color = "#f88";
+        message.textContent = "新しいパスワードを入力してください。";
+        return;
+      }
+
+      try {
+        await updatePassword(currentUser, newPassword);
+        message.style.color = "#4caf50";
+        message.textContent = "パスワードを更新しました。";
+      } catch (e) {
+        message.style.color = "#f88";
+        message.textContent = "エラー：" + e.message;
+      }
+    });
+
+    document.getElementById("logout").addEventListener("click", async () => {
+      await signOut(auth);
+      location.href = "login.html";
+    });
+  </script>
+</body>
+</html>
