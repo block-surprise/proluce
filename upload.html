@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Proluce 投稿ページ</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 40px;
+    }
+
+    .upload-box {
+      max-width: 480px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(255,255,255,0.05);
+      padding: 24px;
+      border-radius: 12px;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      background: #fff;
+      color: #000;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-box">
+    <button id="login">Googleでログイン</button>
+
+    <input type="text" id="video-title" placeholder="タイトル" class="hidden" />
+    <input type="text" id="video-url" placeholder="動画URL" class="hidden" />
+    <button id="upload" class="hidden">投稿する</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCP1k__UfUutHk1IynMXc05VUyoLd_1pH8",
+      authDomain: "proluce-app.firebaseapp.com",
+      projectId: "proluce-app",
+      storageBucket: "proluce-app.firebasestorage.app",
+      messagingSenderId: "1000904334048",
+      appId: "1:1000904334048:web:65626cc73c523177f24e85",
+      measurementId: "G-EH8WJMST1D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginBtn = document.getElementById("login");
+    const titleInput = document.getElementById("video-title");
+    const urlInput = document.getElementById("video-url");
+    const uploadBtn = document.getElementById("upload");
+
+    loginBtn.addEventListener("click", () => {
+      signInWithPopup(auth, provider);
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loginBtn.classList.add("hidden");
+        titleInput.classList.remove("hidden");
+        urlInput.classList.remove("hidden");
+        uploadBtn.classList.remove("hidden");
+      }
+    });
+
+    uploadBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+
+      if (title && url) {
+        await addDoc(collection(db, "videos"), {
+          title: title,
+          url: url,
+          authorId: user.uid,
+          authorName: user.displayName,
+          createdAt: serverTimestamp(),
+          views: 0
+        });
+        alert("投稿完了！");
+        titleInput.value = "";
+        urlInput.value = "";
+      }
+    });
+  </script>
+</body>
+</html>
