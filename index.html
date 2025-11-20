@@ -27,7 +27,6 @@
       height: 100vh;
       scroll-snap-align: start;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
@@ -36,6 +35,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      cursor: pointer;
     }
 
     .overlay {
@@ -48,24 +48,6 @@
       background: rgba(0,0,0,0.3);
       padding: 12px;
       border-radius: 12px;
-    }
-
-    .controls {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      display: flex;
-      gap: 12px;
-    }
-
-    .controls button {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: #fff;
-      font-size: 14px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
     }
 
     nav {
@@ -151,49 +133,23 @@
       video.loop = true;
       video.playsInline = true;
 
+      video.addEventListener('click', () => {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
+
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.textContent = post.caption;
 
-      const controls = document.createElement('div');
-      controls.className = 'controls';
-
-      const playPause = document.createElement('button');
-      playPause.textContent = '⏸︎';
-      playPause.addEventListener('click', () => {
-        if (video.paused) {
-          video.play();
-          playPause.textContent = '⏸︎';
-        } else {
-          video.pause();
-          playPause.textContent = '▶︎';
-        }
-      });
-
-      const muteToggle = document.createElement('button');
-      muteToggle.textContent = '🔇';
-      muteToggle.addEventListener('click', () => {
-        video.muted = !video.muted;
-        muteToggle.textContent = video.muted ? '🔇' : '🔊';
-      });
-
-      const fullscreen = document.createElement('button');
-      fullscreen.textContent = '⛶';
-      fullscreen.addEventListener('click', () => {
-        if (video.requestFullscreen) {
-          video.requestFullscreen();
-        }
-      });
-
-      controls.appendChild(playPause);
-      controls.appendChild(muteToggle);
-      controls.appendChild(fullscreen);
-
       section.appendChild(video);
       section.appendChild(overlay);
-      section.appendChild(controls);
       container.appendChild(section);
     });
   </script>
 </body>
 </html>
+
