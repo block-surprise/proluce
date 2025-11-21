@@ -199,6 +199,19 @@
         displayName: displayNameEl.value.trim(),
         iconUrl: iconUrl
       });
+// Firebaseへの保存が終わったあとに追加
+await fetch("https://github-uploader.proluce.workers.dev", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    filename: `profiles/${user.uid}.json`,
+    content: btoa(JSON.stringify({
+      username: usernameEl.value.trim(),
+      displayName: displayNameEl.value.trim(),
+      iconUrl: iconUrl
+    }))
+  })
+});
 
       iconUrlEl.value = iconUrl;
       originalIconUrl = iconUrl;
