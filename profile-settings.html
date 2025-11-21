@@ -5,8 +5,8 @@
   <title>プロフィールの調整</title>
   <style>
     body {
-      background: #111;
-      color: #fff;
+      background: #f4f8fb;
+      color: #222;
       font-family: sans-serif;
       padding: 40px;
       text-align: center;
@@ -30,8 +30,8 @@
       width: 100%;
     }
     button {
-      background: #fff;
-      color: #000;
+      background: #4caf50;
+      color: #fff;
       cursor: pointer;
     }
     #message {
@@ -47,7 +47,6 @@
       color: #4caf50;
       text-decoration: none;
     }
-
     .icon-wrapper {
       position: relative;
       width: 96px;
@@ -67,7 +66,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.4);
       color: #fff;
       font-size: 0.75em;
       padding: 6px 0;
@@ -92,8 +91,6 @@
   <div class="box">
     <input type="text" id="username" placeholder="ユーザーネーム" />
     <input type="text" id="displayName" placeholder="表示名" />
-    <input type="text" id="iconUrl" placeholder="アイコン画像のURL" />
-    <button id="cancelChange" style="display: none;">変更をキャンセル</button>
     <button id="save">保存する</button>
     <p id="message"></p>
   </div>
@@ -101,67 +98,14 @@
     <a href="account-center.html">波の元へ戻る</a>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      updateDoc
-    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-    import {
-      getAuth,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import {
-      getStorage,
-      ref,
-      uploadBytes,
-      getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCP1k__UfUutHk1IynMXc05VUyoLd_1pH8",
-      authDomain: "proluce-app.firebaseapp.com",
-      projectId: "proluce-app",
-      storageBucket: "proluce-app.appspot.com",
-      messagingSenderId: "1000904334048",
-      appId: "1:1000904334048:web:65626cc73c523177f24e85"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const storage = getStorage(app);
-
+  <script>
     const usernameEl = document.getElementById("username");
     const displayNameEl = document.getElementById("displayName");
-    const iconUrlEl = document.getElementById("iconUrl");
     const iconFileEl = document.getElementById("iconFile");
     const iconPreview = document.getElementById("iconPreview");
-    const cancelBtn = document.getElementById("cancelChange");
     const message = document.getElementById("message");
 
-    let originalIconUrl = "default-icon.png";
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        location.href = "login.html";
-        return;
-      }
-
-      const docRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        usernameEl.value = data.username || "";
-        displayNameEl.value = data.displayName || "";
-        iconUrlEl.value = data.iconUrl || "";
-        originalIconUrl = data.iconUrl || "default-icon.png";
-        iconPreview.src = originalIconUrl;
-      }
-    });
+    let base64Icon = null;
 
     iconFileEl.addEventListener("change", () => {
       const file = iconFileEl.files[0];
@@ -169,55 +113,46 @@
         const reader = new FileReader();
         reader.onload = e => {
           iconPreview.src = e.target.result;
-          cancelBtn.style.display = "inline-block";
+          base64Icon = e.target.result.split(',')[1]; // base64部分だけ抽出
         };
         reader.readAsDataURL(file);
       }
     });
 
-    cancelBtn.addEventListener("click", () => {
-      iconPreview.src = originalIconUrl;
-      iconFileEl.value = "";
-      cancelBtn.style.display = "none";
-    });
-
     document.getElementById("save").addEventListener("click", async () => {
-      const user = auth.currentUser;
-      const docRef = doc(db, "users", user.uid);
+      const uid = crypto.randomUUID(); // 仮のユーザーID（本番はログイン情報から取得）
+      const username = usernameEl.value.trim();
+      const displayName = displayNameEl.value.trim();
 
-      let iconUrl = iconUrlEl.value.trim();
-
-      if (iconFileEl.files.length > 0) {
-        const file = iconFileEl.files[0];
-        const storageRef = ref(storage, `icons/${user.uid}`);
-        await uploadBytes(storageRef, file);
-        iconUrl = await getDownloadURL(storageRef);
+      // ① アイコン画像をGitHubにアップロード
+      let iconUrl = "default-icon.png";
+      if (base64Icon) {
+        const iconRes = await fetch("https://github-uploader.proluce.workers.dev", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: `icons/${uid}.png`,
+            content: base64Icon
+          })
+        });
+        const iconResult = await iconRes.json();
+        iconUrl = iconResult.content?.download_url || iconUrl;
       }
 
-      await updateDoc(docRef, {
-        username: usernameEl.value.trim(),
-        displayName: displayNameEl.value.trim(),
-        iconUrl: iconUrl
+      // ② プロフィールJSONをアップロード
+      await fetch("https://github-uploader.proluce.workers.dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: `profiles/${uid}.json`,
+          content: btoa(JSON.stringify({
+            username,
+            displayName,
+            iconUrl
+          }))
+        })
       });
-// Firebaseへの保存が終わったあとに追加
-await fetch("https://github-uploader.proluce.workers.dev", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    filename: `profiles/${user.uid}.json`,
-    content: btoa(JSON.stringify({
-      username: usernameEl.value.trim(),
-      displayName: displayNameEl.value.trim(),
-      iconUrl: iconUrl
-    }))
-  })
-});
 
-      iconUrlEl.value = iconUrl;
-      originalIconUrl = iconUrl;
-      iconPreview.src = iconUrl;
-      iconFileEl.value = "";
-      cancelBtn.style.display = "none";
       message.textContent = "プロフィールを更新しました。";
     });
   </script>
